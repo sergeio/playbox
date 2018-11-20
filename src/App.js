@@ -27,11 +27,14 @@ class App extends Component {
 
   handleKeypress(e) {
     if (e.key === 'v') {
-      this.setState({splitOrientation: 'v'});
+      this.setState({splitOrientation: 'v', clickMode: 'split'});
     } else if (e.key === 'h') {
-      this.setState({splitOrientation: 'h'});
+      this.setState({splitOrientation: 'h', clickMode: 'split'});
     } else if (e.key === 'n') {
-      this.setState({colorIndex: (this.state.colorIndex + 1) % colors.length});
+      this.setState({
+        colorIndex: (this.state.colorIndex + 1) % colors.length,
+        clickMode: 'color',
+      });
     } else if (e.key === 'm') {
       const newMode = this.state.clickMode !== 'split' ? 'split' : 'color';
       this.setState({clickMode: newMode});
