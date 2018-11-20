@@ -76,10 +76,21 @@ class SVG extends Component {
         y: 1,
         width: 600,
         height: 600,
-        stroke: this.props.outlineBoxes ? "black" : "none",
+        stroke: this.props.outlineBoxes ? "white" : "none",
         strokeWidth: "0px",
         fill: "blue",
       }]};
+  }
+
+  componentWillReceiveProps(newProps) {
+    // This is likely not how you're meant to do things in React. Feels hacky
+    // We need this because otherwise we won't try to render when
+    // props.outlineBoxes changes
+    const intendedStroke = newProps.outlineBoxes ? "white" : "none";
+    if (this.state.boxes[0].stroke === intendedStroke) return
+    this.setState({boxes: this.state.boxes.map((box) => {
+      return {...box, ...{stroke: intendedStroke}}
+    })});
   }
 
   splitBox(index) {
