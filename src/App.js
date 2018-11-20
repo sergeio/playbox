@@ -9,12 +9,20 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.handleKeypress = this.handleKeypress.bind(this);
+    this.svg = React.createRef();
     this.state = {
       splitOrientation: 'h',
       colorIndex: 0,
       outlineBoxes: true,
       clickMode: 'split',
     };
+  }
+
+  undo() {
+    // This is a sign that box data should be stored higher up, on this
+    // component rather than on the SVG Component.  But this is for fun, and
+    // I'm learning.
+    this.svg.current.undo();
   }
 
   handleKeypress(e) {
@@ -27,6 +35,12 @@ class App extends Component {
     } else if (e.key === 'm') {
       const newMode = this.state.clickMode !== 'split' ? 'split' : 'color';
       this.setState({clickMode: newMode});
+    } else if (e.key === 's') {
+      this.setState({clickMode: 'split'});
+    } else if (e.key === 'c') {
+      this.setState({clickMode: 'color'});
+    } else if (e.key === 'u') {
+      this.undo();
     } else if (e.key === ' ') {
       e.preventDefault();
       this.setState({outlineBoxes: !this.state.outlineBoxes});
@@ -40,7 +54,7 @@ class App extends Component {
         tabIndex="0"
         onKeyDown={this.handleKeypress}
       >
-        <SVG {...this.state}/>
+        <SVG ref={this.svg} {...this.state}/>
         <Info {...this.state}/>
       </div>
     );
@@ -79,6 +93,7 @@ class SVG extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      undoIndex: 0,
       boxes: [{
         x: 1,
         y: 1,
@@ -90,6 +105,22 @@ class SVG extends Component {
       }]};
   }
 
+  setState(newState, undoing) {
+    // Intercept updates to `boxes` to save a copy for `undo`
+    // `undoing` signals that we aren't adding a new state. We're reverting
+    if (!('boxes' in newState) || undoing) {
+      return super.setState(newState);
+    }
+    const oldBoxesList = [
+      ...[this.state.boxes],
+      ...this.state.oldBoxesList || [],
+    ].slice(0, 20);
+    const newerState = {
+      ...newState,
+      ...{oldBoxesList: oldBoxesList, undoIndex: 0}};
+    return super.setState(newerState);
+  }
+
   componentWillReceiveProps(newProps) {
     // This is likely not how you're meant to do things in React. Feels hacky
     // We need this because otherwise we won't try to render when
@@ -99,6 +130,20 @@ class SVG extends Component {
     this.setState({boxes: this.state.boxes.map((box) => {
       return {...box, ...{stroke: intendedStroke}}
     })});
+  }
+
+  undo() {
+    if ('oldBoxesList' in this.state) {
+      const previousBoxes = this.state.oldBoxesList[this.state.undoIndex];
+      if (!previousBoxes) {
+        // We're probably trying to undo before the beginning of time
+        return
+      }
+      this.setState({
+        boxes: previousBoxes,
+        undoIndex: this.state.undoIndex + 1,
+      }, true);
+    }
   }
 
   getCurrentColor() {
@@ -127,14 +172,14 @@ class SVG extends Component {
     let boxOne = {
       stroke: toSplit.stroke,
       strokeWidth: toSplit.strokeWidth,
-      fill: this.getCurrentColor(),
+      fill: toSplit.fill,
       x: toSplit.x,
       y: toSplit.y,
     };
     let boxTwo = {
       stroke: toSplit.stroke,
       strokeWidth: toSplit.strokeWidth,
-      fill: this.getCurrentColor(),
+      fill: toSplit.fill,
     };
     if (this.props.splitOrientation === 'v') {
       boxOne = {
