@@ -13,6 +13,7 @@ class App extends Component {
       splitOrientation: 'h',
       colorIndex: 0,
       outlineBoxes: true,
+      clickMode: 'split',
     };
   }
 
@@ -23,6 +24,9 @@ class App extends Component {
       this.setState({splitOrientation: 'h'});
     } else if (e.key === 'n') {
       this.setState({colorIndex: (this.state.colorIndex + 1) % colors.length});
+    } else if (e.key === 'm') {
+      const newMode = this.state.clickMode !== 'split' ? 'split' : 'color';
+      this.setState({clickMode: newMode});
     } else if (e.key === ' ') {
       e.preventDefault();
       this.setState({outlineBoxes: !this.state.outlineBoxes});
@@ -48,6 +52,8 @@ class Info extends Component {
   static propTypes = {
     colorIndex: PropTypes.number.isRequired,
     splitOrientation: PropTypes.string.isRequired,
+    outlineBoxes: PropTypes.bool.isRequired,
+    clickMode: PropTypes.string.isRequired,
   };
 
   render() {
@@ -55,6 +61,7 @@ class Info extends Component {
       <p>{this.props.colorIndex}</p>
       <p>{this.props.splitOrientation}</p>
       <p>{this.props.outlineBoxes ? "t" : "f"}</p>
+      <p>{this.props.clickMode}</p>
     </div>
   }
 
@@ -66,6 +73,7 @@ class SVG extends Component {
     splitOrientation: PropTypes.string.isRequired,
     colorIndex: PropTypes.number.isRequired,
     outlineBoxes: PropTypes.bool.isRequired,
+    clickMode: PropTypes.string.isRequired,
   };
 
   constructor(props) {
@@ -74,10 +82,10 @@ class SVG extends Component {
       boxes: [{
         x: 1,
         y: 1,
-        width: 600,
-        height: 600,
+        width: 512,
+        height: 512,
         stroke: this.props.outlineBoxes ? "white" : "none",
-        strokeWidth: "0px",
+        strokeWidth: ".3px",
         fill: "blue",
       }]};
   }
@@ -93,17 +101,40 @@ class SVG extends Component {
     })});
   }
 
+  getCurrentColor() {
+    return colors[this.props.colorIndex];
+  }
+
+  handleBoxClick(index) {
+    if (this.props.clickMode === 'split') {
+      return this.splitBox(index);
+    } else {
+      return this.colorBox(index);
+    }
+  }
+
+  colorBox(index) {
+    const toColor = {
+      ...this.state.boxes[index],
+      ...{fill: this.getCurrentColor()}};
+    let updatedBoxes = [...this.state.boxes];
+    updatedBoxes.splice(index, 1, toColor);
+    this.setState({boxes: updatedBoxes});
+  }
+
   splitBox(index) {
     const toSplit = this.state.boxes[index];
     let boxOne = {
       stroke: toSplit.stroke,
-      fill: colors[this.props.colorIndex],
+      strokeWidth: toSplit.strokeWidth,
+      fill: this.getCurrentColor(),
       x: toSplit.x,
       y: toSplit.y,
     };
     let boxTwo = {
       stroke: toSplit.stroke,
-      fill: colors[this.props.colorIndex],
+      strokeWidth: toSplit.strokeWidth,
+      fill: this.getCurrentColor(),
     };
     if (this.props.splitOrientation === 'v') {
       boxOne = {
@@ -141,7 +172,7 @@ class SVG extends Component {
 
   boxOnclick(index) {
     function onClick() {
-      this.splitBox(index);
+      this.handleBoxClick(index);
     }
     return onClick.bind(this);
   }
@@ -174,6 +205,7 @@ class Box extends Component {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
     stroke: PropTypes.string.isRequired,
+    strokeWidth: PropTypes.string.isRequired,
     fill: PropTypes.string.isRequired,
   };
 
@@ -184,6 +216,7 @@ class Box extends Component {
       y={this.props.y}
       width={this.props.width}
       height={this.props.height}
+      strokeWidth={this.props.strokeWidth}
       stroke={this.props.stroke}
       fill={this.props.fill}
     />

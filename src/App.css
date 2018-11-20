@@ -1,5 +1,4 @@
 .App {
-  text-align: center;
   margin-top: 10px;
   margin-left: 200px;
   width: 1000px;
@@ -12,13 +11,14 @@
   float: left;
   padding-left: 10px;
   line-height: 10px;
+  font-size: 12px;
   margin: 0;
 }
 
 svg {
   float: left;
-  width: 602px;
-  height: 602px;
+  width: 514px;
+  height: 514px;
 }
 
 .App-logo {
