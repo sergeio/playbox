@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOMServer from 'react-dom/server';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import './App.css';
 
@@ -63,6 +64,11 @@ class App extends Component {
       e.preventDefault();
       this.setState({outlineBoxes: !this.state.outlineBoxes});
     }
+  }
+
+  componentDidMount() {
+    // Focus the App so we are properly intercepting key events
+    ReactDOM.findDOMNode(this).focus();
   }
 
   render() {
