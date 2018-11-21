@@ -43,8 +43,9 @@ class App extends Component {
       });
     } else if (e.key === 'n' || e.key === 'N') {
       const direction = e.key === 'n' ? 1 : -1
+      const len = colors.length;
       this.setState({
-        colorIndex: (this.state.colorIndex + direction) % colors.length,
+        colorIndex: (this.state.colorIndex + direction + len) % len,
         clickMode: 'color',
       });
     } else if (e.key === 'm') {
