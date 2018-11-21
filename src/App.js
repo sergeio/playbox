@@ -120,7 +120,7 @@ class SVG extends Component {
         height: 512,
         stroke: this.props.outlineBoxes ? "white" : "none",
         strokeWidth: ".3px",
-        fill: "blue",
+        fill: "#BBB",
       }]};
   }
 
@@ -166,7 +166,8 @@ class SVG extends Component {
   }
 
   getCurrentColor() {
-    return colors[this.props.colorIndex];
+    const [r, g, b] = colors[this.props.colorIndex];
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
   handleBoxClick(index) {
