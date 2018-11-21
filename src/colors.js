@@ -24,7 +24,7 @@ class Pallette {
 
 }
 
-let colors = new Pallette().generateColorList(25);
+let colors = new Pallette().generateColorList(15);
 
 
 export { colors };
