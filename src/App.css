@@ -7,6 +7,7 @@ body {
   margin-top: 10px;
   margin-left: 200px;
   width: 1000px;
+  display: flex;
 }
 
 :focus {outline:none;}
@@ -16,12 +17,20 @@ body {
   float: left;
   padding-left: 10px;
   line-height: 10px;
-  font-size: 12px;
   margin: 0;
 }
 
+.save:link {
+  float: right;
+  color: #666;
+}
+
+.svg-container {
+  font-size: 12px;
+}
+
 svg {
-  float: left;
+  display: block;
   width: 514px;
   height: 514px;
 }

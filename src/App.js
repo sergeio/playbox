@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOMServer from 'react-dom/server';
 import PropTypes from 'prop-types';
 import './App.css';
 
@@ -39,9 +40,10 @@ class App extends Component {
         clickMode: 'split',
         splitMode: 2,
       });
-    } else if (e.key === 'n') {
+    } else if (e.key === 'n' || e.key === 'N') {
+      const direction = e.key === 'n' ? 1 : -1
       this.setState({
-        colorIndex: (this.state.colorIndex + 1) % colors.length,
+        colorIndex: (this.state.colorIndex + direction) % colors.length,
         clickMode: 'color',
       });
     } else if (e.key === 'm') {
@@ -70,8 +72,8 @@ class App extends Component {
         tabIndex="0"
         onKeyDown={this.handleKeypress}
       >
-        <SVG ref={this.svg} {...this.state}/>
-        <Info {...this.state}/>
+        <SVG ref={this.svg} {...this.state} />
+        <Info {...this.state} />
       </div>
     );
   }
@@ -97,6 +99,24 @@ class Info extends Component {
     </div>
   }
 
+}
+
+
+/**
+ * Render a link to allow saving the SVG to disk
+ */
+class SaveLink extends Component {
+  static propTypes = {
+    svg: PropTypes.element.isRequired,
+  };
+
+  render() {
+    const svgHTML = ReactDOMServer.renderToStaticMarkup(this.props.svg);
+    // b64 encoding the SVG source because otherwise it was getting truncated
+    const svgHTMLb64 = btoa(svgHTML);
+    const href = `data:image/svg+xml;base64,${svgHTMLb64}`;
+    return <a className="save" href={href} download="image.svg">save</a>
+  }
 }
 
 
@@ -262,14 +282,21 @@ class SVG extends Component {
         {...boxProps}
       />
     });
-
-    return <svg
+    const svgComponent = <svg
       version="1.1"
       baseProfile="full"
       xmlns="http://www.w3.org/2000/svg"
     >
       {boxComponents}
     </svg>
+
+    return <div className="svg-container">
+      {svgComponent}
+      <div>
+      <SaveLink svg={svgComponent} />
+    </div>
+    </div>
+
   }
 }
 
