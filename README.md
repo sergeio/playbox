@@ -17,7 +17,7 @@ I wrote this when I found myself drawing a lot of these fractal-ly boxes,
 trying to visualize why different infinite sums converge to a particular
 number.
 
-Here's a visualization of how `sum((3/4)^n) -> 4` as `n -> inf`
+Here's a visualization of how `sum((3/4)^n) = 4` for `n = [0, inf]`
 
 <img src="public/three-quarter-box.svg" width="512" height="512">
 
