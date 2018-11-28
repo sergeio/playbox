@@ -18,6 +18,7 @@ class App extends Component {
       outlineBoxes: true,
       clickMode: 'split',
       splitMode: 4,
+      allMode: false,
     };
   }
 
@@ -59,6 +60,8 @@ class App extends Component {
       this.setState({clickMode: 'split', splitMode: 2});
     } else if (e.key === '4') {
       this.setState({clickMode: 'split', splitMode: 4});
+    } else if (e.key === 'a') {
+      this.setState({allMode: !this.state.allMode});
     } else if (e.key === 'u') {
       this.undo();
     } else if (e.key === ' ') {
@@ -94,15 +97,16 @@ class Info extends Component {
     clickMode: PropTypes.string.isRequired,
     colorIndex: PropTypes.number.isRequired,
     outlineBoxes: PropTypes.bool.isRequired,
+    allMode: PropTypes.bool.isRequired,
   };
 
   render() {
     return <div className="info">
       <p>{this.props.colorIndex}</p>
       <p>{this.props.splitOrientation}</p>
-      <p>{this.props.outlineBoxes ? "t" : "f"}</p>
       <p>{this.props.clickMode}</p>
       <p>{this.props.splitMode}</p>
+      <p>{this.props.allMode ? "all" : ""}</p>
     </div>
   }
 
@@ -134,6 +138,7 @@ class SVG extends Component {
     outlineBoxes: PropTypes.bool.isRequired,
     clickMode: PropTypes.string.isRequired,
     splitMode: PropTypes.number.isRequired,
+    allMode: PropTypes.bool.isRequired,
   };
 
   constructor(props) {
@@ -214,66 +219,93 @@ class SVG extends Component {
     this.setState({boxes: updatedBoxes});
   }
 
-  splitBox(index) {
-    function splitThisBox(toSplit, splitOrientation) {
-      let boxOne = {
-        stroke: toSplit.stroke,
-        strokeWidth: toSplit.strokeWidth,
-        fill: toSplit.fill,
-        x: toSplit.x,
+  splitThisBox(toSplit, splitOrientation) {
+    let boxOne = {
+      stroke: toSplit.stroke,
+      strokeWidth: toSplit.strokeWidth,
+      fill: toSplit.fill,
+      x: toSplit.x,
+      y: toSplit.y,
+    };
+    let boxTwo = {
+      stroke: toSplit.stroke,
+      strokeWidth: toSplit.strokeWidth,
+      fill: toSplit.fill,
+    };
+    if (splitOrientation === 'v') {
+      boxOne = {
+        ...boxOne,
+        width: toSplit.width / 2,
+        height: toSplit.height,
+      };
+      boxTwo = {
+        ...boxTwo,
+        x: toSplit.x + boxOne.width,
         y: toSplit.y,
+        width: toSplit.width / 2,
+        height: toSplit.height,
       };
-      let boxTwo = {
-        stroke: toSplit.stroke,
-        strokeWidth: toSplit.strokeWidth,
-        fill: toSplit.fill,
+    } else {
+      boxOne = {
+        ...boxOne,
+        width: toSplit.width,
+        height: toSplit.height / 2,
       };
-      if (splitOrientation === 'v') {
-        boxOne = {
-          ...boxOne,
-          width: toSplit.width / 2,
-          height: toSplit.height,
-        };
-        boxTwo = {
-          ...boxTwo,
-          x: toSplit.x + boxOne.width,
-          y: toSplit.y,
-          width: toSplit.width / 2,
-          height: toSplit.height,
-        };
-      } else {
-        boxOne = {
-          ...boxOne,
-          width: toSplit.width,
-          height: toSplit.height / 2,
-        };
-        boxTwo = {
-          ...boxTwo,
-          x: toSplit.x,
-          y: toSplit.y + boxOne.height,
-          width: toSplit.width,
-          height: toSplit.height / 2,
-        };
-      }
-      return [boxOne, boxTwo];
+      boxTwo = {
+        ...boxTwo,
+        x: toSplit.x,
+        y: toSplit.y + boxOne.height,
+        width: toSplit.width,
+        height: toSplit.height / 2,
+      };
     }
+    return [boxOne, boxTwo];
+  }
 
-    let newBoxes = splitThisBox(
-      this.state.boxes[index], this.props.splitOrientation);
+  /**
+   * Splits the box that `index` points to, returns new this.state.boxes
+   */
+  splitOneBox(box, boxes) {
+    let newBoxes = this.splitThisBox(box, this.props.splitOrientation);
 
     if (this.props.splitMode === 4) {
       const [boxOne, boxTwo] = newBoxes;
       const tempOrientation = this.props.splitOrientation === 'v' ? 'h' : 'v';
       newBoxes = [
-        ...splitThisBox(boxOne, tempOrientation),
-        ...splitThisBox(boxTwo, tempOrientation),
+        ...this.splitThisBox(boxOne, tempOrientation),
+        ...this.splitThisBox(boxTwo, tempOrientation),
       ];
     }
-    let updatedBoxes = [...this.state.boxes, ...newBoxes];
-    updatedBoxes.splice(index, 1);
-    this.setState({boxes: updatedBoxes});
-
+    // let updatedBoxes = [...boxes, ...newBoxes];
+    let updatedBoxes = [...boxes]
+    const index = updatedBoxes.indexOf(box);
+    updatedBoxes[index] = newBoxes;
+    updatedBoxes = updatedBoxes.flat();
+    return updatedBoxes;
   }
+
+  splitBox(index) {
+    if (!this.props.allMode) {
+      const updatedBoxes = this.splitOneBox(
+      this.state.boxes[index], this.state.boxes);
+      this.setState({boxes: updatedBoxes});
+    } else {
+      const targetColor = this.state.boxes[index].fill;
+      const matchingBoxes = this.state.boxes.map((box) => {
+        if (box.fill === targetColor) {
+          return box;
+        } else {
+          return -1;
+        }
+      }).filter((box) => box !== -1);
+      let updatedBoxes = this.state.boxes;
+      for (const box of matchingBoxes) {
+        updatedBoxes = this.splitOneBox(box, updatedBoxes);
+      }
+      this.setState({boxes: updatedBoxes});
+    }
+  }
+
   boxOnclick(index) {
     function onClick() {
       this.handleBoxClick(index);

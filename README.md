@@ -33,5 +33,6 @@ Controls
  - `2` - Set split-mode to 2-way
  - `h` - Set split-mode to 2-way, horizontal
  - `v` - Set split-mode to 2-way, vertical
+ - `a` - Toggle all-mode (act on all of a certain color)
  - `u` - Undo the last action
  - `<space>` - Toggle box outlines
