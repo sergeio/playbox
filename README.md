@@ -9,13 +9,14 @@ Installation
 
   1. `npm install`
   2. `npm start`
+  3. Visit localhost:3000
 
 Why?
 ----
 
 I wrote this when I found myself drawing a lot of these fractal-ly boxes,
-trying to visualize why different infinite sums converge to a particular
-number.
+trying to [visualize](https://github.com/sergeio/riddle-blog) why different
+infinite sums converge to a particular number.
 
 Here's a visualization of how `sum((3/4)^n) = 4` for `n = [0, inf]`
 
